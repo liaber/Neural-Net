@@ -46,6 +46,12 @@ class Network:
         for layer in self.layers:
             input = layer.feedForward(input)
 
+    def Cost(self, expectedOutput):
+        cost = 0
+        for neuron in self.layers[len(self.layers)]:
+            cost += ((neuron.output)-(expectedOutput[self.layers[len(self.layers)].index(neuron)]))**2
+        return cost
+
     def Draw(self, input):
         numInputs = len(self.layers[0].neurons[0].weights)
         for i in range(numInputs):
@@ -60,12 +66,16 @@ class Network:
                 pygame.draw.circle(screen,(255,255,255),(x, y),15)
                 Text((x,y),str(round(neuron.output,2)),(0,0,0))
 
+class Dataset:
+    def  __init__(self, path):
+        pass
+
 ReLU = lambda x:max(0,x)
 sigmoid = lambda x:1/(1+math.exp(-x))
 noFunc = lambda x:x
 swish = lambda x:sigmoid(x)*x
-numInputs = 10
-network = Network((numInputs,8,5,2),(swish,swish,sigmoid))
+numInputs = 8
+network = Network((numInputs,5,4,1),(swish,swish,sigmoid))
 input = [random.random() for i in range(numInputs)]
 
 while True:
