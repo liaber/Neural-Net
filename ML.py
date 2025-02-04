@@ -8,7 +8,7 @@ clock = pygame.time.Clock()
 
 def Text(pos, text, color):
     font = pygame.font.Font('freesansbold.ttf', 12)
-    text = font.render(text, True, color)
+    text = font.render(str(text), True, color)
     rect = text.get_rect()
     rect.center = pos
     screen.blit(text, rect)
@@ -40,8 +40,9 @@ class Layer:
         return [a(neuron) for neuron in self.neurons]
 
 class Network:
-    def __init__(self, layerSizes, activationFunctions):
+    def __init__(self, layerSizes, activationFunctions, learningRate):
         self.layers = [Layer(layerSizes[i+1],layerSizes[i],activationFunctions[i]) for i in range(len(layerSizes)-1)]
+        self.learningRate = learningRate
 
     def feedForward(self, input):
         for layer in self.layers:
@@ -52,12 +53,22 @@ class Network:
 
     def cost(self, expectedOutput):
         cost = 0
-        for neuron in self.layers[len(self.layers)-1]:
-            cost += ((neuron.output)-(expectedOutput[self.layers[len(self.layers)].index(neuron)]))**2
-        print("\n")
-        return cost
+        #print(type(expectedOutput))
+        if isinstance(expectedOutput, float):
+            return (self.layers[len(self.layers)-1].neurons[0].output - expectedOutput) ** 2
+        elif isinstance(expectedOutput, list):
+            for neuron in self.layers[len(self.layers)-1].neurons:
+                cost += ((neuron.output)-(expectedOutput[self.layers[len(self.layers)-1].neurons.index(neuron)]))**2
+        #print("\n")
+            return cost
 
-    def Draw(self, input):
+    def backpropagate(self):
+        for layer in self.layers:
+            for neuron in layer.neurons:
+                for weight in neuron.weights:
+                    weight -= self.learningRate*
+
+    def Draw(self, input, cost):
         numInputs = len(self.layers[0].neurons[0].weights)
         for i in range(numInputs):
             x = 20
@@ -70,6 +81,7 @@ class Network:
                 y = 20+((layer.neurons.index(neuron)+.5)*(HEIGHT-40)/len(layer.neurons))
                 pygame.draw.circle(screen,(255,255,255),(x, y),15)
                 Text((x,y),str(round(neuron.output,2)),(0,0,0))
+        Text((WIDTH/2,20),f"Cost: {cost}",(255,255,255))
 
 class Dataset:
     def  __init__(self, path):
@@ -95,11 +107,12 @@ sigmoid = lambda x:1/(1+math.exp(-x))
 noFunc = lambda x:x
 swish = lambda x:sigmoid(x)*x
 numInputs = 8
-network = Network((numInputs,5,4,1),(swish,swish,sigmoid))
+network = Network((numInputs,5,4,1),(swish,swish,swish))
 input = random.choice(data.data)
-print(input)
+#print(input)
 network.feedForward(input)
-print(network.cost(input[numInputs-1]))
+#print(network.cost(input[numInputs-1]))
+cost = network.cost(input[numInputs-1])
 
 while True:
     for event in pygame.event.get():
@@ -108,7 +121,7 @@ while True:
             sys.exit()
 
     screen.fill((8,8,25))
-    network.Draw(input)
+    network.Draw(input, cost)
 
     pygame.display.update()
     clock.tick(60)
