@@ -24,6 +24,7 @@ class Neuron:
     def feedForward(self, inputs):
         #print(zip(self.weights, inputs))
         #print(tuple(zip(self.weights, inputs)))
+        #print(inputs)
         weightedSum = sum(w * i for w, i in tuple(zip(self.weights, inputs))) + self.bias
         self.output = self.activationFunction(weightedSum)
         return self.output
@@ -46,10 +47,14 @@ class Network:
         for layer in self.layers:
             input = layer.feedForward(input)
 
-    def Cost(self, expectedOutput):
+    def output(self):
+        return [neuron.output for neuron in self.layers[len(self.layers)-1]]
+
+    def cost(self, expectedOutput):
         cost = 0
-        for neuron in self.layers[len(self.layers)]:
+        for neuron in self.layers[len(self.layers)-1]:
             cost += ((neuron.output)-(expectedOutput[self.layers[len(self.layers)].index(neuron)]))**2
+        print("\n")
         return cost
 
     def Draw(self, input):
@@ -68,7 +73,22 @@ class Network:
 
 class Dataset:
     def  __init__(self, path):
-        pass
+        with open(path, "r") as data:
+            content = data.read()
+        content = content.split("\n")
+        newContent = []
+        for line in content:
+            newContent.append(line.split(","))
+        newContent.remove(newContent[0])
+        content = []
+        for line in newContent:
+            newLine = []
+            for val in line:
+                val = float(val)
+                newLine.append(val)
+            content.append(newLine)
+        self.data = content
+data = Dataset("diabetes.csv")
 
 ReLU = lambda x:max(0,x)
 sigmoid = lambda x:1/(1+math.exp(-x))
@@ -76,7 +96,10 @@ noFunc = lambda x:x
 swish = lambda x:sigmoid(x)*x
 numInputs = 8
 network = Network((numInputs,5,4,1),(swish,swish,sigmoid))
-input = [random.random() for i in range(numInputs)]
+input = random.choice(data.data)
+print(input)
+network.feedForward(input)
+print(network.cost(input[numInputs-1]))
 
 while True:
     for event in pygame.event.get():
@@ -85,7 +108,6 @@ while True:
             sys.exit()
 
     screen.fill((8,8,25))
-    network.feedForward(input)
     network.Draw(input)
 
     pygame.display.update()
