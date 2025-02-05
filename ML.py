@@ -26,7 +26,7 @@ class Neuron:
         #print(tuple(zip(self.weights, inputs)))
         #print(inputs)
         weightedSum = sum(w * i for w, i in tuple(zip(self.weights, inputs))) + self.bias
-        self.output = self.activationFunction(weightedSum)
+        self.output = self.activationFunction.function(weightedSum)
         return self.output
     
 class Layer:
@@ -40,9 +40,9 @@ class Layer:
         return [a(neuron) for neuron in self.neurons]
 
 class Network:
-    def __init__(self, layerSizes, activationFunctions, learningRate):
+    def __init__(self, layerSizes, activationFunctions):
         self.layers = [Layer(layerSizes[i+1],layerSizes[i],activationFunctions[i]) for i in range(len(layerSizes)-1)]
-        self.learningRate = learningRate
+        #self.learningRate = learningRate
 
     def feedForward(self, input):
         for layer in self.layers:
@@ -66,7 +66,8 @@ class Network:
         for layer in self.layers:
             for neuron in layer.neurons:
                 for weight in neuron.weights:
-                    weight -= self.learningRate*
+                    pass
+                    #weight -= self.learningRate*(derivative of cost with respect to the weight)
 
     def Draw(self, input, cost):
         numInputs = len(self.layers[0].neurons[0].weights)
@@ -102,12 +103,17 @@ class Dataset:
         self.data = content
 data = Dataset("diabetes.csv")
 
-ReLU = lambda x:max(0,x)
-sigmoid = lambda x:1/(1+math.exp(-x))
-noFunc = lambda x:x
-swish = lambda x:sigmoid(x)*x
+class ActivationFunction:
+    def __init__(self, function, derivative):
+        self.function = function
+        self.derivative = derivative
+
+ReLU = ActivationFunction(lambda x:max(0,x), lambda x:0 if(x<=0) else 1)
+sigmoid = ActivationFunction(lambda x:1/(1+math.exp(-x)), lambda x:-((1/((math.exp(-x)+1)**2))*(-(1/math.exp(x)))))
+noFunc = ActivationFunction(lambda x:x, lambda x:1)
+#swish = lambda x:sigmoid(x)*x
 numInputs = 8
-network = Network((numInputs,5,4,1),(swish,swish,swish))
+network = Network((numInputs,5,4,1),(ReLU,ReLU,sigmoid))
 input = random.choice(data.data)
 #print(input)
 network.feedForward(input)
@@ -120,7 +126,8 @@ while True:
             pygame.quit()
             sys.exit()
 
-    screen.fill((8,8,25))
+    #screen.fill((8,8,25))
+    screen.fill((100,100,100))
     network.Draw(input, cost)
 
     pygame.display.update()
