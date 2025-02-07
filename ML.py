@@ -126,8 +126,8 @@ while True:
             pygame.quit()
             sys.exit()
 
-    #screen.fill((8,8,25))
-    screen.fill((100,100,100))
+    screen.fill((8,8,25))
+    #screen.fill((100,100,100))
     network.Draw(input, cost)
 
     pygame.display.update()
