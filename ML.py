@@ -84,23 +84,22 @@ class Network:
                 Text((x,y),str(round(neuron.output,2)),(0,0,0))
         Text((WIDTH/2,20),f"Cost: {cost}",(255,255,255))
 
-class Dataset:
-    def  __init__(self, path):
-        with open(path, "r") as data:
-            content = data.read()
-        content = content.split("\n")
-        newContent = []
-        for line in content:
-            newContent.append(line.split(","))
-        newContent.remove(newContent[0])
-        content = []
-        for line in newContent:
-            newLine = []
-            for val in line:
-                val = float(val)
-                newLine.append(val)
-            content.append(newLine)
-        self.data = content
+def Dataset(path):
+    with open(path, "r") as data:
+        content = data.read()
+    content = content.split("\n")
+    newContent = []
+    for line in content:
+        newContent.append(line.split(","))
+    newContent.remove(newContent[0])
+    content = []
+    for line in newContent:
+        newLine = []
+        for val in line:
+            val = float(val)
+            newLine.append(val)
+        content.append(newLine)
+    return content
 data = Dataset("diabetes.csv")
 
 class ActivationFunction:
@@ -109,12 +108,12 @@ class ActivationFunction:
         self.derivative = derivative
 
 ReLU = ActivationFunction(lambda x:max(0,x), lambda x:0 if(x<=0) else 1)
-sigmoid = ActivationFunction(lambda x:1/(1+math.exp(-x)), lambda x:-((1/((math.exp(-x)+1)**2))*(-(1/math.exp(x)))))
+sigmoid = ActivationFunction(lambda x:1/(1+math.exp(-x)), lambda x:-(((1+math.exp(-x))**-2)*(-math.exp(-x))))
 noFunc = ActivationFunction(lambda x:x, lambda x:1)
 #swish = lambda x:sigmoid(x)*x
 numInputs = 8
-network = Network((numInputs,5,4,1),(ReLU,ReLU,sigmoid))
-input = random.choice(data.data)
+network = Network((numInputs,3,1),(ReLU,sigmoid))
+input = random.choice(data)
 #print(input)
 network.feedForward(input)
 #print(network.cost(input[numInputs-1]))
@@ -125,6 +124,10 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            input = random.choice(data)
+            network.feedForward(input)
+            cost = network.cost(input[numInputs])
 
     screen.fill((8,8,25))
     #screen.fill((100,100,100))
